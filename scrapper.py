@@ -10,14 +10,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 if __name__ == '__main__':
-#    url = 'https://shopee.tw/search?keyword=nvidia'
-    url = 'https://shopee.tw/search?keyword=nvidia&noCorrection=true&page=0&usedItem=true'
-
+    url = 'https://shopee.tw/search?keyword=nvidia&noCorrection=true&page=0&sortBy=ctime&usedItem=true'
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
+    driver_tab = webdriver.Chrome(options=chrome_options)
 
     WebDriverWait(driver, 10).until(EC.visibility_of_any_elements_located( \
       (By.CLASS_NAME, 'shopee-search-item-result__item')))
@@ -25,9 +24,7 @@ if __name__ == '__main__':
     height = driver.execute_script("return document.documentElement.scrollHeight")
     i = 0
     while i < height:
-        print("i = {}".format(i))
         height = driver.execute_script("return document.documentElement.scrollHeight")
-        print("height = {}".format(height))
         driver.execute_script("window.scrollTo(0, {});".format(i))
         i = i + 500
         sleep(0.5)
@@ -40,9 +37,17 @@ if __name__ == '__main__':
 
     for i, item in enumerate(items):
         try:
-            name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div')
-            price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]')
-            print("{}. {} => ${}".format(i, name.text, price.text))
+            name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div').text
+            price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]').text
+            product_link = item.find_element_by_xpath('.//div/a').get_attribute('href')
+
+            driver_tab.get(product_link)
+            product_detail = WebDriverWait(driver_tab, 10).until(EC.visibility_of_element_located( \
+              (By.CLASS_NAME, 'page-product__detail')))
+            description = product_detail.find_element_by_xpath('.//div[2]/div[2]/div/span').text
+
+            print("{}. {} => ${} \n{}\n".format(i, name, price, \
+              product_link))
         except NoSuchElementException:
             pass
 
