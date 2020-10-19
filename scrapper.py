@@ -10,7 +10,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 if __name__ == '__main__':
-    url = 'https://shopee.tw/search?keyword=nvidia'
+#    url = 'https://shopee.tw/search?keyword=nvidia'
+    url = 'https://shopee.tw/search?keyword=nvidia&noCorrection=true&page=0&usedItem=true'
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -40,7 +41,8 @@ if __name__ == '__main__':
     for i, item in enumerate(items):
         try:
             name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div')
-            print("{}. {}".format(i, name.text))
+            price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]')
+            print("{}. {} => ${}".format(i, name.text, price.text))
         except NoSuchElementException:
             pass
 
