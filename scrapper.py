@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,15 +15,15 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
-    item_list = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
-      (By.XPATH, "//div[contains(@class, 'shopee-search-item-result__items')]")))
+    items = WebDriverWait(driver, 20).until(EC.visibility_of_all_elements_located( \
+      (By.CLASS_NAME, 'shopee-search-item-result__item')))
 
-    print("Finished Waiting")
+    print("number of items: {}".format(len(items)))
 
-    items = item_list.find_elements_by_class_name('shopee-search-item-result__item')
+    for i, item in enumerate(items):
+        try:
+            name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div')
+            print("{}. {}".format(i, name.text))
+        except NoSuchElementException:
+            pass
 
-    for item in items:
-        name = item.find_element_by_xpath('//div[@data-sqe="name"]//div')
-        print(name.text)
-
-  return 0
