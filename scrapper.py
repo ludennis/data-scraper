@@ -9,8 +9,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from psql_utils import InitializePostgreSQLDatabase
+
 if __name__ == '__main__':
-    url = 'https://shopee.tw/search?keyword=nvidia&noCorrection=true&page=0&sortBy=ctime&usedItem=true'
+    InitializePostgreSQLDatabase(user='d400')
+
+    keyword = 'gtx1070'
+    url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
+      '&page=0&sortBy=ctime&usedItem=true'.format(keyword)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("window-size=1920,1080")
