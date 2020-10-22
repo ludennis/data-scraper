@@ -9,10 +9,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from psql_utils import ConnectDatabase
 from psql_utils import InitializePostgreSQLDatabase
 
 if __name__ == '__main__':
-    InitializePostgreSQLDatabase(user='d400')
+    connection = ConnectDatabase(user='d400')
+    InitializePostgreSQLDatabase(connection)
 
     keyword = 'gtx1070'
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
@@ -57,3 +59,4 @@ if __name__ == '__main__':
         except NoSuchElementException:
             pass
 
+    connection.close()
