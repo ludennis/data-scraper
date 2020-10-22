@@ -2,12 +2,16 @@ from getpass import getpass
 
 import psycopg2
 
+
 def ConnectDatabase(user: str, db_name: str='scraper_db', host: str='localhost'):
     password = getpass(prompt='Password of user: ')
-    connect_string = 'dbname={} user={} host={} password={}'.format(
-      db_name, user, host, password)
+    connect_string = \
+      """
+      dbname={} user={} host={} password={}
+      """.format(db_name, user, host, password)
 
     return psycopg2.connect(connect_string)
+
 
 def InitializePostgreSQLDatabase(connection):
     cursor = connection.cursor()
@@ -28,4 +32,17 @@ def InitializePostgreSQLDatabase(connection):
     connection.commit()
 
     cursor.close()
-    connection.close()
+
+
+def InsertItem(connection, name, price, search_phrase, url):
+    command = \
+      """
+      insert into shopee_items values
+        (default, '{}', {}, '{}', default, '{}');
+      """.format(name, price, search_phrase, url)
+
+    cursor = connection.cursor()
+    cursor.execute(command)
+    connection.commit()
+
+    cursor.close()

@@ -11,14 +11,15 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from psql_utils import ConnectDatabase
 from psql_utils import InitializePostgreSQLDatabase
+from psql_utils import InsertItem
 
 if __name__ == '__main__':
     connection = ConnectDatabase(user='d400')
     InitializePostgreSQLDatabase(connection)
 
-    keyword = 'gtx1070'
+    search_phrase = 'gtx1070'
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
-      '&page=0&sortBy=ctime&usedItem=true'.format(keyword)
+      '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("window-size=1920,1080")
@@ -45,8 +46,10 @@ if __name__ == '__main__':
 
     for i, item in enumerate(items):
         try:
+            # TODO: add seller
             name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div').text
             price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]').text
+            price = int(price.replace(',',''))
             product_link = item.find_element_by_xpath('.//div/a').get_attribute('href')
 
             driver_tab.get(product_link)
@@ -56,6 +59,10 @@ if __name__ == '__main__':
 
             print("{}. {} => ${} \n{}\n".format(i, name, price, \
               product_link))
+
+            # TODO: find before insert
+            InsertItem(connection, name, price, search_phrase, url);
+
         except NoSuchElementException:
             pass
 
