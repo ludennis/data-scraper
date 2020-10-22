@@ -12,5 +12,19 @@ def InitializePostgreSQLDatabase(
     connection = psycopg2.connect(connect_string)
     cursor = connection.cursor()
 
+    command = \
+      """
+      create table if not exists shopee_items (
+        item_id SERIAL PRIMARY KEY,
+        title varchar(255) not null,
+        price integer not null,
+        search_phrase varchar(255) not null,
+        update_date date not null default current_date
+      );
+      """
+
+    cursor.execute(command)
+    connection.commit()
+
     cursor.close()
     connection.close()
