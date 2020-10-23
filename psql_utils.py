@@ -1,23 +1,11 @@
 import datetime
 import psycopg2
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, DateTime, String
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from getpass import getpass
 
-Base = declarative_base()
-
-
-class ShopeeItem(Base):
-    __tablename__ = 'shopee_items'
-
-    item_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    price = Column(Integer)
-    search_phrase = Column(String)
-    update_date = Column(DateTime, default=datetime.datetime.utcnow)
-    url = Column(String)
+from models import Base
+from models import ShopeeItem
 
 
 def ConnectDatabase(user: str, db_name: str='scraper_db', host: str='localhost'):
