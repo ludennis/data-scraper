@@ -1,48 +1,43 @@
+import datetime
+import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, DateTime, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from getpass import getpass
 
-import psycopg2
+Base = declarative_base()
+
+
+class ShopeeItem(Base):
+    __tablename__ = 'shopee_items'
+
+    item_id = Column(Integer, primary_key=True)
+    name = Column(String)
+    price = Column(Integer)
+    search_phrase = Column(String)
+    update_date = Column(DateTime, default=datetime.datetime.utcnow)
+    url = Column(String)
 
 
 def ConnectDatabase(user: str, db_name: str='scraper_db', host: str='localhost'):
     password = getpass(prompt='Password of user: ')
-    connect_string = \
-      """
-      dbname={} user={} host={} password={}
-      """.format(db_name, user, host, password)
 
-    return psycopg2.connect(connect_string)
+    engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format( \
+      user, password, host, db_name))
 
-
-def InitializePostgreSQLDatabase(connection):
-    cursor = connection.cursor()
-
-    command = \
-      """
-      create table if not exists shopee_items (
-        item_id SERIAL PRIMARY KEY,
-        name varchar(255) not null,
-        price integer not null,
-        search_phrase varchar(255) not null,
-        update_date date not null default current_date,
-        url text not null
-      );
-      """
-
-    cursor.execute(command)
-    connection.commit()
-
-    cursor.close()
+    return engine
 
 
-def InsertItem(connection, name, price, search_phrase, url):
-    command = \
-      """
-      insert into shopee_items values
-        (default, '{}', {}, '{}', default, '{}');
-      """.format(name, price, search_phrase, url)
+def InitializePostgreSQLDatabase(engine):
+    Base.metadata.create_all(engine)
 
-    cursor = connection.cursor()
-    cursor.execute(command)
-    connection.commit()
 
-    cursor.close()
+def InsertItem(engine, name, price, search_phrase, url):
+    item = ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=url)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    session.add(item)
+    session.commit()

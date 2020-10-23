@@ -14,8 +14,8 @@ from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertItem
 
 if __name__ == '__main__':
-    connection = ConnectDatabase(user='d400')
-    InitializePostgreSQLDatabase(connection)
+    engine = ConnectDatabase(user='d400')
+    InitializePostgreSQLDatabase(engine)
 
     search_phrase = 'gtx1070'
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
@@ -61,9 +61,7 @@ if __name__ == '__main__':
               product_link))
 
             # TODO: find before insert
-            InsertItem(connection, name, price, search_phrase, url);
+            InsertItem(engine, name, price, search_phrase, product_link);
 
         except NoSuchElementException:
             pass
-
-    connection.close()
