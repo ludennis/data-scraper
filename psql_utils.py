@@ -1,4 +1,5 @@
 import psycopg2
+from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from getpass import getpass
@@ -31,3 +32,10 @@ def InsertItem(engine, item: ShopeeItem):
 def InsertItem(engine, name, price, search_phrase, url):
     item = ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=url)
     InserItem(item)
+
+
+def SelectAllShopeeItems(engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    return session.query(ShopeeItem).all()
