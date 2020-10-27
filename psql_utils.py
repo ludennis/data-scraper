@@ -1,4 +1,3 @@
-import datetime
 import psycopg2
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -21,11 +20,14 @@ def InitializePostgreSQLDatabase(engine):
     Base.metadata.create_all(engine)
 
 
-def InsertItem(engine, name, price, search_phrase, url):
-    item = ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=url)
-
+def InsertItem(engine, item: ShopeeItem):
     Session = sessionmaker(bind=engine)
     session = Session()
 
     session.add(item)
     session.commit()
+
+
+def InsertItem(engine, name, price, search_phrase, url):
+    item = ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=url)
+    InserItem(item)
