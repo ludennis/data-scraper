@@ -12,7 +12,7 @@ engine = ConnectDatabase(user='d400')
 
 @app.route('/')
 def index():
-    return 'Index Page'
+    return render_template("index.html")
 
 @app.route('/hello')
 def hello():
