@@ -21,7 +21,7 @@ def InitializePostgreSQLDatabase(engine):
     Base.metadata.create_all(engine)
 
 
-def InsertItem(engine, item: ShopeeItem):
+def InsertShopeeItem(engine, item: ShopeeItem):
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -29,9 +29,10 @@ def InsertItem(engine, item: ShopeeItem):
     session.commit()
 
 
-def InsertItem(engine, name, price, search_phrase, url):
-    item = ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=url)
-    InserItem(item)
+def InsertItem(engine, name, price, search_phrase, url, image):
+    item = ShopeeItem(
+      name=name, price=price, search_phrase=search_phrase, url=url, image=image)
+    InsertShopeeItem(engine, item)
 
 
 def SelectAllShopeeItems(engine):

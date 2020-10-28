@@ -13,6 +13,8 @@ from psql_utils import ConnectDatabase
 from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertItem
 
+import urllib.request
+
 if __name__ == '__main__':
     engine = ConnectDatabase(user='d400')
     InitializePostgreSQLDatabase(engine)
@@ -51,6 +53,9 @@ if __name__ == '__main__':
             price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]').text
             price = int(price.replace(',',''))
             product_link = item.find_element_by_xpath('.//div/a').get_attribute('href')
+            image = item.find_element_by_xpath('.//div/a/div/div[1]/img')
+            image_source = image.get_attribute("src")
+            image_data = urllib.request.urlopen(image_source).read()
 
             driver_tab.get(product_link)
             product_detail = WebDriverWait(driver_tab, 10).until(EC.visibility_of_element_located( \
@@ -61,7 +66,7 @@ if __name__ == '__main__':
               product_link))
 
             # TODO: find before insert
-            InsertItem(engine, name, price, search_phrase, product_link);
+            InsertItem(engine, name, price, search_phrase, product_link, image_data);
 
         except NoSuchElementException:
             pass

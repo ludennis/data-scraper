@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, Integer, DateTime, String
+from sqlalchemy import Column, Integer, DateTime, String, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -21,3 +21,4 @@ class ShopeeItem(Base):
     search_phrase = Column(String)
     update_date = Column(DateTime, default=datetime.datetime.utcnow)
     url = Column(String)
+    image = Column(LargeBinary)

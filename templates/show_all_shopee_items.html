@@ -1,3 +1,4 @@
 {% for item in items %}
-    <p> {{ item }} </p>
+    <p> {{ item.item_id }}. {{ item.name }} -> ${{ item.price }}  </p>
+    <img src="data:;base64,{{ item.image }}" />
 {% endfor %}
