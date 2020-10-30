@@ -92,8 +92,11 @@ if __name__ == '__main__':
                     shopee_item.quantity = detail.find_element_by_xpath('.//div').text
                     print("Found quantity = {}".format(shopee_item.quantity))
                 elif detail.find_element_by_xpath('.//label').text == '出貨地':
-                    shopee_item.location = detail.find_element_by_xpath('.//dvi').text
+                    shopee_item.location = detail.find_element_by_xpath('.//div').text
                     print("Found location = {}".format(shopee_item.location))
+            shopee_item.description = \
+              product_detail.find_element_by_xpath('.//div[2]/div[2]/div/span').text
+            print("found description: {}".format(shopee_item.description))
         except NoSuchElementException:
             print("No such element exception")
             pass
