@@ -1,4 +1,13 @@
 {% for item in items %}
-    <p> {{ item.item_id }}. {{ item.name }} -> ${{ item.price }}  </p>
+    <a href="{{ item.url }}">{{ item.item_id }}. {{ item.name }} -> ${{ item.price }}</a>
+    <br>
     <img src="data:;base64,{{ item.image }}" />
+    <p> Update Date: {{ item.update_date }} </p>
+    <p> Seller: {{ item.seller }} </p>
+    <p> Brand: {{ item.brand }} </p>
+    <p> Quantity: {{ item.quantity }} </p>
+    <p> Location: {{ item.location }} </p>
+    <p> Description: {{ item.description }} </p>
+    <br>
+    <br>
 {% endfor %}

@@ -29,9 +29,10 @@ def InsertShopeeItem(engine, item: ShopeeItem):
     session.commit()
 
 
-def InsertItem(engine, name, price, search_phrase, url, image):
-    item = ShopeeItem(
-      name=name, price=price, search_phrase=search_phrase, url=url, image=image)
+def InsertItem( \
+  engine, name, price, search_phrase, url, image, seller, brand, quantity, location, description):
+    item = ShopeeItem( \
+      name, price, search_phrase, url, image, seller, brand, quantity, location, description)
     InsertShopeeItem(engine, item)
 
 
