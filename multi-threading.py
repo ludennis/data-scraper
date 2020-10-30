@@ -6,21 +6,43 @@ import time
 import concurrent.futures
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def ScrapeURL(url):
+def ScrapeShopeeItemDetails(url):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
+    try:
+        driver.get(url)
+        print("Scraping url: {}".format(url))
+        product_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
+          (By.CLASS_NAME, 'page-product__detail')))
 
-    return WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
-      (By.CLASS_NAME, 'shopee-search-item-result__item')))
+        print("product_detail: {}".format(product_detail))
+        details = product_detail.find_elements_by_xpath('.//div[1]/div[2]/*')
+        for detail in details:
+            if detail.find_element_by_xpath('.//label').text == '品牌':
+                brand = detail.find_element_by_xpath('.//a').text
+                print("Found brand = {}".format(brand))
+            elif detail.find_element_by_xpath('.//label').text == '庫存':
+                quantity = detail.find_element_by_xpath('.//div').text
+                print("Found quantity = {}".format(quantity))
+            elif detail.find_element_by_xpath('.//label').text == '出貨地':
+                location = detail.find_element_by_xpath('.//div').text
+                print("Found location = {}".format(location))
+        description = product_detail.find_element_by_xpath('.//div[2]/div[2]/div/span').text
+        print("found description: {}".format(description))
+    except NoSuchElementException:
+        print("No such element exception")
+        pass
+
+    return {'brand': brand, 'quantity': quantity, 'location': location, 'description': description}
 
 
 if __name__ == '__main__':
@@ -38,14 +60,15 @@ if __name__ == '__main__':
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=numThreads) as executor:
         # start the load operations and mark each future with its url
-        future_to_url = {executor.submit(ScrapeURL, url): url for url in urls}
-        for future in concurrent.futures.as_completed(future_to_rul):
+        future_to_url = {executor.submit(ScrapeShopeeItemDetails, url): url for url in urls}
+        for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
             try:
-                element = future.result()
+                details = future.result()
             except Exception as e:
                 print("%r generated an exception: %s" % (url, e))
             else:
                 print("scraped url: %r" % (url))
+                print("Details: {}".format(details))
 
     print("Exiting main thread")
