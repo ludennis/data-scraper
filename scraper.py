@@ -79,13 +79,37 @@ if __name__ == '__main__':
         try:
             print("Scraping url: {}".format(shopee_item.url))
             driver.get(shopee_item.url)
+            product_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
+              (By.CLASS_NAME, 'page-product__detail')))
+
+            print("product_detail: {}".format(product_detail))
+            details = product_detail.find_elements_by_xpath('.//div[1]/div[2]/*')
+            for detail in details:
+                if detail.find_element_by_xpath('.//label').text == '品牌':
+                    shopee_item.brand = detail.find_element_by_xpath('.//a').text
+                    print("Found brand = {}".format(shopee_item.brand))
+                elif detail.find_element_by_xpath('.//label').text == '庫存':
+                    shopee_item.quantity = detail.find_element_by_xpath('.//div').text
+                    print("Found quantity = {}".format(shopee_item.quantity))
+                elif detail.find_element_by_xpath('.//label').text == '出貨地':
+                    shopee_item.location = detail.find_element_by_xpath('.//dvi').text
+                    print("Found location = {}".format(shopee_item.location))
+        except NoSuchElementException:
+            print("No such element exception")
+            pass
+
+    for shopee_item in shopee_items:
+        if shopee_item.url == None:
+            print("No url found")
+            continue
+        try:
+            print("Scraping url: {}".format(shopee_item.url))
+            driver.get(shopee_item.url)
             seller_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
               (By.CLASS_NAME, 'page-product__shop')))
 
-            seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
-            print("found seller = {}".format(seller))
-
-            shopee_item.seller = seller
+            shopee_item.seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
+            print("found seller = {}".format(shopee_item.seller))
         except NoSuchElementException:
             print("No such element exception")
             pass
