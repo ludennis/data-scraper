@@ -44,11 +44,34 @@ def ScrapeShopeeItemDetails(url):
         print("No such element exception")
         pass
 
+    driver.close()
+
     return {'brand': brand, 'quantity': quantity, 'location': location, 'description': description}
 
 
+def ScrapeShopeeItemSeller(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("window-size=1920,1080")
+    driver = webdriver.Chrome(options=chrome_options)
+    try:
+        print("Scraping url: {}".format(shopee_item.url))
+        driver.get(url)
+        seller_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
+          (By.CLASS_NAME, 'page-product__shop')))
+
+        seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
+        print("found seller = {}".format(seller))
+    except NoSuchElementException:
+        print("No such element exception")
+        pass
+
+    driver.close()
+
+    return seller
+
 if __name__ == '__main__':
-    numThreads = 24
+    numThreads = 12
 
     database_name = 'scraper_db'
     user_name = 'd400'
@@ -103,11 +126,11 @@ if __name__ == '__main__':
             print("No such element exception")
             pass
 
-    # TODO: combine these scraping together
     with concurrent.futures.ThreadPoolExecutor(max_workers=numThreads) as executor:
         future_to_shopee_item = { \
           executor.submit(ScrapeShopeeItemDetails, shopee_item.url): shopee_item \
           for shopee_item in shopee_items}
+
         for future in concurrent.futures.as_completed(future_to_shopee_item):
             shopee_item = future_to_shopee_item[future]
             try:
@@ -115,30 +138,27 @@ if __name__ == '__main__':
             except Exception as e:
                 print("%r generated as exception: %s" % (shopee_item.url, e))
             else:
-                print("scraped url: %r" % (url))
+                print("scraped url: %r" % (shopee_item.url))
                 shopee_item.brand = details['brand']
                 shopee_item.quantity = details['quantity']
                 shopee_item.location = details['location']
                 shopee_item.description = details['description']
 
-        for shopee_item in shopee_items:
-            if shopee_item.url == None:
-                print("No url found")
-                continue
-            try:
-                print("Scraping url: {}".format(shopee_item.url))
-                driver.get(shopee_item.url)
-                seller_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
-                  (By.CLASS_NAME, 'page-product__shop')))
+        future_to_shopee_item = { \
+          executor.submit(ScrapeShopeeItemSeller, shopee_item.url): shopee_item \
+          for shopee_item in shopee_items}
 
-                shopee_item.seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
-                print("found seller = {}".format(shopee_item.seller))
-            except NoSuchElementException:
-                print("No such element exception")
-                pass
+        for future in concurrent.futures.as_completed(future_to_shopee_item):
+            shopee_item = future_to_shopee_item[future]
+            try:
+                seller = future.result()
+            except Exception as e:
+                print("%r generated as exception: %s" % (shopee_item.url, e))
+            else:
+                print("scraped url: %r" % (shopee_item.url))
+                shopee_item.seller = seller
 
     for shopee_item in shopee_items:
         InsertShopeeItem(engine, shopee_item)
-        print("Inserted ShopeeItem {} to database".format(shopee_item.name))
 
     driver.quit()
