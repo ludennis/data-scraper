@@ -11,14 +11,22 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from psql_utils import ConnectDatabase
 from psql_utils import InitializePostgreSQLDatabase
-from psql_utils import InsertItem
+from psql_utils import InsertShopeeItem
 
 import urllib.request
 
-if __name__ == '__main__':
-    engine = ConnectDatabase(user='d400')
-    InitializePostgreSQLDatabase(engine)
+from models import ShopeeItem
 
+
+if __name__ == '__main__':
+    database_name = 'scraper_db'
+    user_name = 'd400'
+    engine = ConnectDatabase(user=user_name, db_name=database_name)
+    print('Connected to database {} with user {}'.format(database_name, user_name))
+    InitializePostgreSQLDatabase(engine)
+    print('Database initialized')
+
+    # TODO: look for a file containing a list of search phrases
     search_phrase = 'gtx1070'
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
       '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
@@ -27,7 +35,6 @@ if __name__ == '__main__':
     chrome_options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
-    driver_tab = webdriver.Chrome(options=chrome_options)
 
     WebDriverWait(driver, 10).until(EC.visibility_of_any_elements_located( \
       (By.CLASS_NAME, 'shopee-search-item-result__item')))
@@ -40,33 +47,51 @@ if __name__ == '__main__':
         i = i + 500
         sleep(0.5)
 
-
     items = WebDriverWait(driver, 20).until(EC.visibility_of_all_elements_located( \
       (By.CLASS_NAME, 'shopee-search-item-result__item')))
 
     print("number of items: {}".format(len(items)))
 
+    shopee_items = []
+
     for i, item in enumerate(items):
         try:
-            # TODO: add seller
             name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div').text
             price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]').text
             price = int(price.replace(',',''))
-            product_link = item.find_element_by_xpath('.//div/a').get_attribute('href')
+            product_url = item.find_element_by_xpath('.//div/a').get_attribute('href')
             image = item.find_element_by_xpath('.//div/a/div/div[1]/img')
             image_source = image.get_attribute("src")
             image_data = urllib.request.urlopen(image_source).read()
 
-            driver_tab.get(product_link)
-            product_detail = WebDriverWait(driver_tab, 10).until(EC.visibility_of_element_located( \
-              (By.CLASS_NAME, 'page-product__detail')))
-            description = product_detail.find_element_by_xpath('.//div[2]/div[2]/div/span').text
-
-            print("{}. {} => ${} \n{}\n".format(i, name, price, \
-              product_link))
-
-            # TODO: find before insert
-            InsertItem(engine, name, price, search_phrase, product_link, image_data);
-
+            shopee_items.append(
+              ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=product_url, \
+                         image=image_data, seller=None, brand=None, quantity=None, location=None, \
+                         description=None))
         except NoSuchElementException:
+            print("No such element exception")
             pass
+
+    for shopee_item in shopee_items:
+        if shopee_item.url == None:
+            print("No url found")
+            continue
+        try:
+            print("Scraping url: {}".format(shopee_item.url))
+            driver.get(shopee_item.url)
+            seller_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
+              (By.CLASS_NAME, 'page-product__shop')))
+
+            seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
+            print("found seller = {}".format(seller))
+
+            shopee_item.seller = seller
+        except NoSuchElementException:
+            print("No such element exception")
+            pass
+
+    for shopee_item in shopee_items:
+        InsertShopeeItem(engine, shopee_item)
+        print("Inserted ShopeeItem {} to database".format(shopee_item.name))
+
+    driver.quit()
