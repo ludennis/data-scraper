@@ -15,6 +15,8 @@ from psql_utils import ConnectDatabase
 from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertShopeeItem
 
+from sqlalchemy.orm import sessionmaker
+
 import urllib.request
 
 from models import ShopeeItem
@@ -69,6 +71,7 @@ def ScrapeShopeeItemSeller(url):
     driver.close()
 
     return seller
+
 
 if __name__ == '__main__':
     numThreads = 12
@@ -159,6 +162,19 @@ if __name__ == '__main__':
                 shopee_item.seller = seller
 
     for shopee_item in shopee_items:
-        InsertShopeeItem(engine, shopee_item)
+        # TODO: check if exist before inserting
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        table = ShopeeItem.__table__.name
+        count = session.query(ShopeeItem.name, ShopeeItem.seller). \
+          filter(ShopeeItem.name == shopee_item.name). \
+          filter(ShopeeItem.seller == shopee_item.seller). \
+          count()
+
+        print("count = {}".format(count))
+        if count <= 0:
+            InsertShopeeItem(engine, shopee_item)
+        else:
+            print("Shopee Item exists in table. Skipping")
 
     driver.quit()
