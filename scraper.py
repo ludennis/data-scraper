@@ -16,6 +16,8 @@ from psql_utils import CountExistingShopeeItem
 from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertShopeeItem
 
+from io_utils import ReadSearchPhrasesFromFile
+
 from sqlalchemy.orm import sessionmaker
 
 import urllib.request
@@ -74,7 +76,8 @@ def ScrapeShopeeItemSeller(url):
     return seller
 
 
-def StartScraping(engine, search_phrase):
+def StartScraping(search_phrase):
+    print("Scraping newest used items with search_phrase: '{}'".format(search_phrase))
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
       '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
     chrome_options = Options()
@@ -168,13 +171,14 @@ if __name__ == '__main__':
 
     # TODO: look for a file containing a list of search phrases
     # TODO: set time for periodic scraping
-    search_phrase = 'gtx1070'
+    search_phrases = ReadSearchPhrasesFromFile('search_phrases.txt')
 
-    shopee_items = StartScraping(engine, search_phrase)
+    for search_phrase in search_phrases:
+        shopee_items = StartScraping(search_phrase)
 
-    for shopee_item in shopee_items:
-        if CountExistingShopeeItem(engine, shopee_item) <= 0:
-            print("Shopee Item doesn't exist, inserting")
-            InsertShopeeItem(engine, shopee_item)
-        else:
-            print("Shopee Item exists in table. Skipping")
+        for shopee_item in shopee_items:
+            if CountExistingShopeeItem(engine, shopee_item) <= 0:
+                print("Shopee Item doesn't exist, inserting")
+                InsertShopeeItem(engine, shopee_item)
+            else:
+                print("Shopee Item exists in table. Skipping")

@@ -1,0 +1,13 @@
+gtx1070
+gtx1080
+gtx1080 Ti
+rtx2060
+rtx2070
+rtx2080
+rtx2080 Ti
+滑板
+技術板
+Dyson v6
+Dyson v7
+Dyson v8
+itx
