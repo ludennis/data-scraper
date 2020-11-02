@@ -47,7 +47,7 @@ def SelectShopeeItems(engine, search_phrase):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase)
+    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).all()
 
 
 def GetAllSearchPhrases(engine):

@@ -31,6 +31,8 @@ def all_shopee_items():
 @app.route('/shopee_items_<search_phrase>')
 def shopee_items(search_phrase):
     items = SelectShopeeItems(engine, search_phrase)
+    for item in items:
+        item.image = b64encode(item.image).decode('utf-8')
 
     return render_template("show_all_shopee_items.html", items=items)
 
