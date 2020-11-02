@@ -74,18 +74,7 @@ def ScrapeShopeeItemSeller(url):
     return seller
 
 
-if __name__ == '__main__':
-    numThreads = 12
-
-    database_name = 'scraper_db'
-    user_name = 'd400'
-    engine = ConnectDatabase(user=user_name, db_name=database_name)
-    print('Connected to database {} with user {}'.format(database_name, user_name))
-    InitializePostgreSQLDatabase(engine)
-    print('Database initialized')
-
-    # TODO: look for a file containing a list of search phrases
-    search_phrase = 'gtx1070'
+def StartScraping(engine, search_phrase):
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
       '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
     chrome_options = Options()
@@ -162,11 +151,30 @@ if __name__ == '__main__':
                 print("scraped url: %r" % (shopee_item.url))
                 shopee_item.seller = seller
 
+    driver.quit()
+
+    return shopee_items
+
+
+if __name__ == '__main__':
+    numThreads = 12
+
+    database_name = 'scraper_db'
+    user_name = 'd400'
+    engine = ConnectDatabase(user=user_name, db_name=database_name)
+    print('Connected to database {} with user {}'.format(database_name, user_name))
+    InitializePostgreSQLDatabase(engine)
+    print('Database initialized')
+
+    # TODO: look for a file containing a list of search phrases
+    # TODO: set time for periodic scraping
+    search_phrase = 'gtx1070'
+
+    shopee_items = StartScraping(engine, search_phrase)
+
     for shopee_item in shopee_items:
         if CountExistingShopeeItem(engine, shopee_item) <= 0:
             print("Shopee Item doesn't exist, inserting")
             InsertShopeeItem(engine, shopee_item)
         else:
             print("Shopee Item exists in table. Skipping")
-
-    driver.quit()
