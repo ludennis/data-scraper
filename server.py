@@ -16,11 +16,14 @@ engine = ConnectDatabase(user='d400')
 def index():
     search_phrases_and_counts = []
     search_phrases = GetAllSearchPhrases(engine)
+    total_count = 0
     for search_phrase in search_phrases:
-        search_phrases_and_counts.append( \
-          (search_phrase, CountShopeeItemWithSearchPhrase(engine, search_phrase)))
+        count = CountShopeeItemWithSearchPhrase(engine, search_phrase)
+        search_phrases_and_counts.append((search_phrase, count))
+        total_count = total_count + count
 
-    return render_template("index.html", search_phrases_and_counts=search_phrases_and_counts)
+    return render_template("index.html",
+      search_phrases_and_counts=search_phrases_and_counts, total_count=total_count)
 
 @app.route('/hello')
 def hello():
