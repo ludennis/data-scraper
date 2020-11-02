@@ -41,3 +41,15 @@ def SelectAllShopeeItems(engine):
     session = Session()
 
     return session.query(ShopeeItem).all()
+
+
+def CountExistingShopeeItem(engine, shopee_item):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    table = ShopeeItem.__table__.name
+    count = session.query(ShopeeItem.name, ShopeeItem.seller). \
+      filter(ShopeeItem.name == shopee_item.name). \
+      filter(ShopeeItem.seller == shopee_item.seller). \
+      count()
+
+    return count

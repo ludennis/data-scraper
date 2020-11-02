@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from psql_utils import ConnectDatabase
+from psql_utils import CountExistingShopeeItem
 from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertShopeeItem
 
@@ -162,17 +163,8 @@ if __name__ == '__main__':
                 shopee_item.seller = seller
 
     for shopee_item in shopee_items:
-        # TODO: check if exist before inserting
-        Session = sessionmaker(bind=engine)
-        session = Session()
-        table = ShopeeItem.__table__.name
-        count = session.query(ShopeeItem.name, ShopeeItem.seller). \
-          filter(ShopeeItem.name == shopee_item.name). \
-          filter(ShopeeItem.seller == shopee_item.seller). \
-          count()
-
-        print("count = {}".format(count))
-        if count <= 0:
+        if CountExistingShopeeItem(engine, shopee_item) <= 0:
+            print("Shopee Item doesn't exist, inserting")
             InsertShopeeItem(engine, shopee_item)
         else:
             print("Shopee Item exists in table. Skipping")
