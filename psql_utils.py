@@ -43,6 +43,20 @@ def SelectAllShopeeItems(engine):
     return session.query(ShopeeItem).all()
 
 
+def SelectShopeeItems(engine, search_phrase):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase)
+
+
+def GetAllSearchPhrases(engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    return [r for (r,) in session.query(ShopeeItem.search_phrase).distinct()]
+
+
 def CountExistingShopeeItem(engine, shopee_item):
     Session = sessionmaker(bind=engine)
     session = Session()
