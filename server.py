@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template
 
 from psql_utils import ConnectDatabase
+from psql_utils import CountShopeeItemWithSearchPhrase
 from psql_utils import GetAllSearchPhrases
 from psql_utils import SelectAllShopeeItems
 from psql_utils import SelectShopeeItems
@@ -13,8 +14,13 @@ engine = ConnectDatabase(user='d400')
 
 @app.route('/')
 def index():
+    search_phrases_and_counts = []
     search_phrases = GetAllSearchPhrases(engine)
-    return render_template("index.html", search_phrases=search_phrases)
+    for search_phrase in search_phrases:
+        search_phrases_and_counts.append( \
+          (search_phrase, CountShopeeItemWithSearchPhrase(engine, search_phrase)))
+
+    return render_template("index.html", search_phrases_and_counts=search_phrases_and_counts)
 
 @app.route('/hello')
 def hello():

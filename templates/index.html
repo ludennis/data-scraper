@@ -2,8 +2,8 @@
 <html>
 <body>
     <p><a href="{{ url_for('all_shopee_items') }}">All Shopee Items</a></href></p>
-    {% for search_phrase in search_phrases %}
-        <p><a href="shopee_items_{{ search_phrase }}">Shopee Items - {{ search_phrase }}</a></href></p>
+    {% for search_phrase, count in search_phrases_and_counts %}
+        <p><a href="shopee_items_{{ search_phrase }}">Shopee Items - {{ search_phrase }} [{{ count }}]</a></href></p>
     {% endfor %}
 </body>
 </html>

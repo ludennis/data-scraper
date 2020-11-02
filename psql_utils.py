@@ -59,10 +59,16 @@ def GetAllSearchPhrases(engine):
       .order_by(desc(ShopeeItem.search_phrase))]
 
 
+def CountShopeeItemWithSearchPhrase(engine, search_phrase):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).count()
+
+
 def CountExistingShopeeItem(engine, shopee_item):
     Session = sessionmaker(bind=engine)
     session = Session()
-    table = ShopeeItem.__table__.name
     count = session.query(ShopeeItem.name, ShopeeItem.seller). \
       filter(ShopeeItem.name == shopee_item.name). \
       filter(ShopeeItem.seller == shopee_item.seller). \
