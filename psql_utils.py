@@ -1,6 +1,7 @@
 import psycopg2
-from sqlalchemy import MetaData
 from sqlalchemy import create_engine
+from sqlalchemy import desc
+from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
 from getpass import getpass
 
@@ -54,7 +55,8 @@ def GetAllSearchPhrases(engine):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    return [r for (r,) in session.query(ShopeeItem.search_phrase).distinct()]
+    return [r for (r,) in session.query(ShopeeItem.search_phrase).distinct() \
+      .order_by(desc(ShopeeItem.search_phrase))]
 
 
 def CountExistingShopeeItem(engine, shopee_item):
