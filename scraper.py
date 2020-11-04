@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from psql_utils import ConnectDatabase
 from psql_utils import CountExistingShopeeItem
+from psql_utils import CountExistingShopeeItemWithSameName
 from psql_utils import InitializePostgreSQLDatabase
 from psql_utils import InsertShopeeItem
 
@@ -76,7 +77,7 @@ def ScrapeShopeeItemSeller(url):
     return seller
 
 
-def StartScraping(search_phrase):
+def StartScraping(engine, search_phrase):
     print("Scraping newest used items with search_phrase: '{}'".format(search_phrase))
     url = 'https://shopee.tw/search?keyword={}&noCorrection=true' \
       '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
@@ -114,10 +115,12 @@ def StartScraping(search_phrase):
             image_source = image.get_attribute("src")
             image_data = urllib.request.urlopen(image_source).read()
 
-            shopee_items.append(
-              ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=product_url, \
-                         image=image_data, seller=None, brand=None, quantity=None, location=None, \
-                         description=None))
+            count = CountExistingShopeeItemWithSameName(engine, name)
+            if count  <= 0:
+                shopee_items.append(
+                  ShopeeItem(name=name, price=price, search_phrase=search_phrase, url=product_url, \
+                             image=image_data, seller=None, brand=None, quantity=None, location=None, \
+                             description=None))
         except NoSuchElementException:
             print("No such element exception")
             pass

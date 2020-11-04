@@ -77,6 +77,16 @@ def CountShopeeItemWithSearchPhrase(engine, search_phrase):
 
     return result
 
+def CountExistingShopeeItemWithSameName(engine, name):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    count = session.query(ShopeeItem.name, ShopeeItem.seller). \
+      filter(ShopeeItem.name == name). \
+      count()
+    session.expunge_all()
+    session.close()
+
+    return count
 
 def CountExistingShopeeItem(engine, shopee_item):
     Session = sessionmaker(bind=engine)
