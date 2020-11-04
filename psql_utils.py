@@ -28,6 +28,7 @@ def InsertShopeeItem(engine, item: ShopeeItem):
 
     session.add(item)
     session.commit()
+    session.close()
 
 
 def InsertItem( \
@@ -40,30 +41,41 @@ def InsertItem( \
 def SelectAllShopeeItems(engine):
     Session = sessionmaker(bind=engine)
     session = Session()
+    result = session.query(ShopeeItem).all()
+    session.expunge_all()
+    session.close()
 
-    return session.query(ShopeeItem).all()
+    return result
 
 
 def SelectShopeeItems(engine, search_phrase):
     Session = sessionmaker(bind=engine)
     session = Session()
+    result = session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).all()
+    session.expunge_all()
+    session.close()
 
-    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).all()
-
+    return result
 
 def GetAllSearchPhrases(engine):
     Session = sessionmaker(bind=engine)
     session = Session()
-
-    return [r for (r,) in session.query(ShopeeItem.search_phrase).distinct() \
+    result = [r for (r,) in session.query(ShopeeItem.search_phrase).distinct() \
       .order_by(desc(ShopeeItem.search_phrase))]
+    session.expunge_all()
+    session.close()
+
+    return result
 
 
 def CountShopeeItemWithSearchPhrase(engine, search_phrase):
     Session = sessionmaker(bind=engine)
     session = Session()
+    result = session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).count()
+    session.expunge_all()
+    session.close()
 
-    return session.query(ShopeeItem).filter(ShopeeItem.search_phrase == search_phrase).count()
+    return result
 
 
 def CountExistingShopeeItem(engine, shopee_item):
@@ -73,5 +85,7 @@ def CountExistingShopeeItem(engine, shopee_item):
       filter(ShopeeItem.name == shopee_item.name). \
       filter(ShopeeItem.seller == shopee_item.seller). \
       count()
+    session.expunge_all()
+    session.close()
 
     return count
