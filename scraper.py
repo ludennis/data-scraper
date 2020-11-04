@@ -5,7 +5,7 @@ from time import sleep
 import concurrent.futures
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -87,8 +87,12 @@ def StartScraping(engine, search_phrase):
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
-    WebDriverWait(driver, 10).until(EC.visibility_of_any_elements_located( \
-      (By.CLASS_NAME, 'shopee-search-item-result__item')))
+    try:
+        WebDriverWait(driver, 10).until(EC.visibility_of_any_elements_located( \
+          (By.CLASS_NAME, 'shopee-search-item-result__item')))
+    except TimeoutException:
+        print("Search phrase yields no result.")
+        return None
 
     height = driver.execute_script("return document.documentElement.scrollHeight")
     i = 0
@@ -172,16 +176,16 @@ if __name__ == '__main__':
     InitializePostgreSQLDatabase(engine)
     print('Database initialized')
 
-    # TODO: look for a file containing a list of search phrases
     # TODO: set time for periodic scraping
     search_phrases = ReadSearchPhrasesFromFile('search_phrases.txt')
 
     for search_phrase in search_phrases:
-        shopee_items = StartScraping(search_phrase)
+        shopee_items = StartScraping(engine, search_phrase)
 
-        for shopee_item in shopee_items:
-            if CountExistingShopeeItem(engine, shopee_item) <= 0:
-                print("Shopee Item doesn't exist, inserting")
-                InsertShopeeItem(engine, shopee_item)
-            else:
-                print("Shopee Item exists in table. Skipping")
+        if shopee_items is not None:
+            for shopee_item in shopee_items:
+                if CountExistingShopeeItem(engine, shopee_item) <= 0:
+                    print("Shopee Item doesn't exist, inserting")
+                    InsertShopeeItem(engine, shopee_item)
+                else:
+                    print("Shopee Item exists in table. Skipping")
