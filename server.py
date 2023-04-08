@@ -10,7 +10,7 @@ from psql_utils import SelectShopeeItems
 from base64 import b64encode
 
 app = Flask(__name__)
-engine = ConnectDatabase(user='d400')
+engine = ConnectDatabase(user='scraper')
 
 @app.route('/')
 def index():

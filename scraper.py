@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from argparse import ArgumentParser
 from time import sleep
 
 import concurrent.futures
@@ -39,13 +40,13 @@ def ScrapeShopeeItemDetails(url):
 
         details = product_detail.find_elements_by_xpath('.//div[1]/div[2]/*')
         for detail in details:
-            if detail.find_element_by_xpath('.//label').text == '品牌':
-                brand = detail.find_element_by_xpath('.//a').text
-            elif detail.find_element_by_xpath('.//label').text == '庫存':
-                quantity = detail.find_element_by_xpath('.//div').text
-            elif detail.find_element_by_xpath('.//label').text == '出貨地':
-                location = detail.find_element_by_xpath('.//div').text
-        description = product_detail.find_element_by_xpath('.//div[2]/div[2]/div/span').text
+            if detail.find_element("xpath", './/label').text == '品牌':
+                brand = detail.find_element("xpath", './/a').text
+            elif detail.find_element("xpath", './/label').text == '庫存':
+                quantity = detail.find_element("xpath", './/div').text
+            elif detail.find_element("xpath", './/label').text == '出貨地':
+                location = detail.find_element("xpath", './/div').text
+        description = product_detail.find_element("xpath", './/div[2]/div[2]/div/span').text
     except NoSuchElementException:
         print("No such element exception")
         pass
@@ -66,7 +67,7 @@ def ScrapeShopeeItemSeller(url):
         seller_detail = WebDriverWait(driver, 10).until(EC.visibility_of_element_located( \
           (By.CLASS_NAME, 'page-product__shop')))
 
-        seller = seller_detail.find_element_by_xpath('.//div[1]/div/div[1]').text
+        seller = seller_detail.find_element("xpath", './/div[1]/div/div[1]').text
         print("found seller = {}".format(seller))
     except NoSuchElementException:
         print("No such element exception")
@@ -111,11 +112,13 @@ def StartScraping(engine, search_phrase):
 
     for i, item in enumerate(items):
         try:
-            name = item.find_element_by_xpath('.//div[@data-sqe="name"]//div').text
-            price = item.find_element_by_xpath('.//div/a/div/div[2]/div[2]/div/span[2]').text
+            name = item.find_element("xpath", './/div[@data-sqe="name"]//div')
+            price = item.find_element("xpath", './/div/a/div/div[2]/div[2]/div/span[2]')
             price = int(price.replace(',',''))
-            product_url = item.find_element_by_xpath('.//div/a').get_attribute('href')
-            image = item.find_element_by_xpath('.//div/a/div/div[1]/img')
+
+            product_url = item.find_element("xpath", './/div/a').get_attribute('href')
+
+            image = item.find_element("xpath", './/div/a/div/div[1]/img')
             image_source = image.get_attribute("src")
             image_data = urllib.request.urlopen(image_source).read()
 
@@ -169,10 +172,19 @@ def StartScraping(engine, search_phrase):
 if __name__ == '__main__':
     numThreads = 12
 
-    database_name = 'scraper_db'
-    user_name = 'd400'
-    engine = ConnectDatabase(user=user_name, db_name=database_name)
-    print('Connected to database {} with user {}'.format(database_name, user_name))
+    parser = ArgumentParser(
+        description='Scraper scraping data information from Shopee website')
+
+    parser.add_argument('--database_name', default='scraper_db')
+    parser.add_argument('--username', default='scraper')
+
+    args = parser.parse_args()
+
+    database_name = args.database_name
+    username = args.username
+
+    engine = ConnectDatabase(user=username, db_name=database_name)
+    print('Connected to database {} with user {}'.format(database_name, username))
     InitializePostgreSQLDatabase(engine)
     print('Database initialized')
 
