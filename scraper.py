@@ -8,9 +8,11 @@ import concurrent.futures
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
 from psql_utils import ConnectDatabase
 from psql_utils import CountExistingShopeeItem
@@ -84,8 +86,11 @@ def StartScraping(engine, search_phrase):
       '&page=0&sortBy=ctime&usedItem=true'.format(search_phrase)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("window-size=1920,1080")
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),
+            options=chrome_options)
     driver.get(url)
 
     try:

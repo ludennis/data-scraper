@@ -1,6 +1,15 @@
 # data-scrapper
 Data Scrapper for Shopee
 
+# Docker Setup
+## Build Docker Image
+`docker build . --tag ubuntu`
+
+## Running Docker Images
+Runs both previously built ubuntu image and postgres image
+`./run_docker.sh`
+
+# Manual Setup
 ## Setup PostgreSQL database
 
 - `apt install postgresql`
